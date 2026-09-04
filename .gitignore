@@ -1,0 +1,9 @@
+.setup/
+.wrangler/
+.dev.vars
+.env
+node_modules/
+dist/
+coverage/
+.agent/
+*.log

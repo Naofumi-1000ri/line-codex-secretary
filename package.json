@@ -1,0 +1,35 @@
+{
+  "name": "line-codex-secretary",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "build": "npm run build --workspaces --if-present",
+    "typecheck": "npm run typecheck --workspaces --if-present",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "worker:dev": "wrangler dev --config apps/worker/wrangler.jsonc",
+    "worker:deploy": "wrangler deploy --config apps/worker/wrangler.jsonc",
+    "worker:secrets": "tsx apps/setup/src/secret-broker.ts",
+    "worker:control": "tsx apps/setup/src/worker-control.ts",
+    "codex:smoke": "tsx apps/setup/src/codex-smoke.ts",
+    "secretary": "tsx apps/agent/src/index.ts",
+    "agent:start": "npm run secretary",
+    "setup": "tsx apps/setup/src/status.ts"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^5.20260903.1",
+    "@types/node": "^24.0.0",
+    "tsx": "^4.20.5",
+    "typescript": "^5.9.2",
+    "vitest": "^3.2.4",
+    "wrangler": "^4.128.0"
+  },
+  "dependencies": {
+    "zod": "^4.1.5"
+  }
+}

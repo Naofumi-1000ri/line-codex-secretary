@@ -1,0 +1,14 @@
+{
+  "name": "@line-secretary/worker",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "build": "wrangler deploy --dry-run --config wrangler.jsonc --outdir dist"
+  },
+  "dependencies": {
+    "@line-secretary/protocol": "0.1.0",
+    "zod": "^4.1.5"
+  }
+}

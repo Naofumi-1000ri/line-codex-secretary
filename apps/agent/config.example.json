@@ -1,0 +1,9 @@
+{
+  "workerUrl": "https://line-codex-secretary-dev.example.workers.dev",
+  "agentId": "linebot-mac",
+  "workspaceKey": "linebot",
+  "workspacePath": "/Users/hgs/Documents/ChatGPT/LineBotV2",
+  "pollIntervalMs": 5000,
+  "heartbeatIntervalMs": 30000,
+  "timeoutMs": 1800000
+}

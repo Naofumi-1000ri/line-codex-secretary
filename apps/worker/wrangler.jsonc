@@ -1,0 +1,23 @@
+{
+  "$schema": "../../node_modules/wrangler/config-schema.json",
+  "name": "line-codex-secretary-dev",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-09-01",
+  "account_id": "00ce666b9e68f12900d79e580b09c1ac",
+  "workers_dev": true,
+  "preview_urls": false,
+  "vars": {
+    "APP_VERSION": "0.1.0",
+    "ENVIRONMENT": "development",
+    "DEFAULT_WORKSPACE_KEY": "linebot",
+    "AGENT_ID": "linebot-mac"
+  },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "line-codex-secretary-dev",
+      "database_id": "765af75f-0929-4f25-af3d-1ce31758e6a8",
+      "migrations_dir": "migrations"
+    }
+  ]
+}
