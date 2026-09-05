@@ -1,6 +1,6 @@
 {
   "$schema": "../../node_modules/wrangler/config-schema.json",
-  "name": "line-codex-secretary-dev",
+  "name": "line-codex-secretary-doc-test-20260904-2240",
   "main": "src/index.ts",
   "compatibility_date": "2026-09-01",
   "account_id": "00ce666b9e68f12900d79e580b09c1ac",
@@ -15,8 +15,8 @@
   "d1_databases": [
     {
       "binding": "DB",
-      "database_name": "line-codex-secretary-dev",
-      "database_id": "765af75f-0929-4f25-af3d-1ce31758e6a8",
+      "database_name": "line-codex-secretary-doc-test-20260904-2240",
+      "database_id": "cab20d60-b436-4bfa-8e70-be84a8459903",
       "migrations_dir": "migrations"
     }
   ]

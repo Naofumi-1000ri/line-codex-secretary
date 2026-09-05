@@ -90,21 +90,77 @@ function putSecret(name: string, value: string): Promise<void> {
   });
 }
 
+function readClipboard(): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const child = spawn("/usr/bin/pbpaste", [], {
+      cwd: projectRoot,
+      shell: false,
+      stdio: ["ignore", "pipe", "pipe"]
+    });
+    let value = "";
+    let error = "";
+    child.stdout.setEncoding("utf8");
+    child.stderr.setEncoding("utf8");
+    child.stdout.on("data", (chunk: string) => (value += chunk));
+    child.stderr.on("data", (chunk: string) => (error += chunk));
+    child.on("error", reject);
+    child.on("close", (code) => {
+      if (code === 0) resolve(value.replace(/[\r\n]+$/, ""));
+      else reject(new Error(`CLIPBOARD_READ_FAILED:${error.slice(-200)}`));
+    });
+  });
+}
+
+function clearClipboard(): Promise<void> {
+  return new Promise((resolve, reject) => {
+    const child = spawn("/usr/bin/pbcopy", [], {
+      cwd: projectRoot,
+      shell: false,
+      stdio: ["pipe", "ignore", "pipe"]
+    });
+    let error = "";
+    child.stderr.setEncoding("utf8");
+    child.stderr.on("data", (chunk: string) => (error += chunk));
+    child.on("error", reject);
+    child.on("close", (code) => {
+      if (code === 0) resolve();
+      else reject(new Error(`CLIPBOARD_CLEAR_FAILED:${error.slice(-200)}`));
+    });
+    child.stdin.end();
+  });
+}
+
 const mode = process.argv[2] ?? "all";
+const useClipboard = process.argv.includes("--clipboard");
 const prompt = process.stdin.isTTY && process.stdout.isTTY ? hiddenPrompt : nativeHiddenPrompt;
 
+async function receiveSecret(message: string): Promise<string> {
+  if (!useClipboard) return prompt(message);
+  const value = await readClipboard();
+  if (!value) throw new Error("CLIPBOARD_EMPTY");
+  return value;
+}
+
 if (mode === "channel-secret" || mode === "all") {
-  const channelSecret = await prompt("LINEの合言葉を貼り付けて登録してください（入力内容は表示されません）");
-  if (channelSecret.length < 16) throw new Error("LINE_CHANNEL_SECRET_INVALID");
-  await putSecret("LINE_CHANNEL_SECRET", channelSecret);
-  console.log("LINEの合言葉を安全に登録しました。値は保存・表示していません。");
+  try {
+    const channelSecret = await receiveSecret("LINEの合言葉を貼り付けて登録してください（入力内容は表示されません）");
+    if (channelSecret.length < 16) throw new Error("LINE_CHANNEL_SECRET_INVALID");
+    await putSecret("LINE_CHANNEL_SECRET", channelSecret);
+    console.log("LINEの合言葉を安全に登録しました。値は保存・表示していません。");
+  } finally {
+    if (useClipboard) await clearClipboard();
+  }
 }
 
 if (mode === "access-token" || mode === "all") {
-  const accessToken = await prompt("LINEへ返事を送る鍵を貼り付けて登録してください（入力内容は表示されません）");
-  if (accessToken.length < 40) throw new Error("LINE_CHANNEL_ACCESS_TOKEN_INVALID");
-  await putSecret("LINE_CHANNEL_ACCESS_TOKEN", accessToken);
-  console.log("LINEへ返事を送る鍵を安全に登録しました。値は保存・表示していません。");
+  try {
+    const accessToken = await receiveSecret("LINEへ返事を送る鍵を貼り付けて登録してください（入力内容は表示されません）");
+    if (accessToken.length < 40) throw new Error("LINE_CHANNEL_ACCESS_TOKEN_INVALID");
+    await putSecret("LINE_CHANNEL_ACCESS_TOKEN", accessToken);
+    console.log("LINEへ返事を送る鍵を安全に登録しました。値は保存・表示していません。");
+  } finally {
+    if (useClipboard) await clearClipboard();
+  }
 }
 
 if (mode === "agent-token" || mode === "all") {
