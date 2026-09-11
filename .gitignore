@@ -8,3 +8,4 @@ coverage/
 .agent/
 *.log
 apps/worker/wrangler.local.jsonc
+line-media/

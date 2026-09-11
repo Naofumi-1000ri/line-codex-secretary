@@ -2,11 +2,97 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "type": "object",
   "additionalProperties": false,
-  "required": ["summary", "artifacts", "requested_actions", "warnings"],
+  "required": [
+    "summary",
+    "artifacts",
+    "requested_actions",
+    "warnings",
+    "notification",
+    "execution",
+    "folder"
+  ],
   "properties": {
-    "summary": { "type": "string", "minLength": 1, "maxLength": 12000 },
-    "artifacts": { "type": "array", "maxItems": 20, "items": { "type": "string", "maxLength": 500 } },
-    "requested_actions": { "type": "array", "maxItems": 20, "items": { "type": "string", "maxLength": 500 } },
-    "warnings": { "type": "array", "maxItems": 20, "items": { "type": "string", "maxLength": 500 } }
+    "summary": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 12000
+    },
+    "artifacts": {
+      "type": "array",
+      "maxItems": 20,
+      "items": {
+        "type": "string",
+        "maxLength": 500
+      }
+    },
+    "requested_actions": {
+      "type": "array",
+      "maxItems": 20,
+      "items": {
+        "type": "string",
+        "maxLength": 500
+      }
+    },
+    "warnings": {
+      "type": "array",
+      "maxItems": 20,
+      "items": {
+        "type": "string",
+        "maxLength": 500
+      }
+    },
+    "notification": {
+      "anyOf": [
+        {
+          "type": "null"
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "mode",
+            "scope"
+          ],
+          "properties": {
+            "mode": {
+              "type": "string",
+              "enum": [
+                "quiet",
+                "detailed",
+                "inherit"
+              ]
+            },
+            "scope": {
+              "type": "string",
+              "enum": [
+                "turn",
+                "conversation"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    "execution": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "enum": [
+        "reply",
+        "work",
+        "ask",
+        "analyze",
+        "organize",
+        null
+      ]
+    },
+    "folder": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "maxLength": 100
+    }
   }
 }

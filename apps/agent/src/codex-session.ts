@@ -1,3 +1,4 @@
+import { RELEASE_VERSION } from "@line-secretary/protocol";
 import { spawn, type ChildProcessWithoutNullStreams } from "node:child_process";
 import { readFile } from "node:fs/promises";
 import path from "node:path";
@@ -93,7 +94,7 @@ export class CodexSession {
         clientInfo: {
           name: "line_codex_secretary",
           title: "LINE Codex Secretary",
-          version: "0.1.0"
+          version: RELEASE_VERSION
         },
         capabilities: null
       });
@@ -141,7 +142,7 @@ export class CodexSession {
     return { threadId: thread.id, resumed: false };
   }
 
-  async runTurn(threadId: string, prompt: string, timeoutMs: number, abortSignal?: AbortSignal): Promise<CodexTurn> {
+  async runTurn(threadId: string, prompt: string, timeoutMs: number, abortSignal?: AbortSignal, images: string[] = []): Promise<CodexTurn> {
     if (this.activeTurn) throw new Error("CODEX_TURN_ALREADY_RUNNING");
 
     return new Promise<CodexTurn>((resolve, reject) => {
@@ -162,7 +163,7 @@ export class CodexSession {
 
       void this.request("turn/start", {
         threadId,
-        input: [{ type: "text", text: prompt }],
+        input: [{ type: "text", text: prompt }, ...images.map((image) => ({ type: "localImage", path: image }))],
         cwd: this.workspace,
         model: this.model,
         effort: this.reasoningEffort,

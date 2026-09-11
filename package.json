@@ -1,6 +1,6 @@
 {
   "name": "line-codex-secretary",
-  "version": "0.1.0",
+  "version": "0.3.0",
   "private": true,
   "type": "module",
   "workspaces": [
@@ -19,11 +19,15 @@
     "codex:smoke": "tsx apps/setup/src/codex-smoke.ts",
     "secretary": "tsx apps/agent/src/index.ts",
     "agent:start": "npm run secretary",
-    "setup": "tsx apps/setup/src/status.ts"
+    "setup": "tsx apps/setup/src/status.ts",
+    "media:smoke": "tsx apps/setup/src/media-smoke.ts",
+    "conversation:smoke": "tsx apps/setup/src/conversation-smoke.ts"
   },
   "devDependencies": {
     "@cloudflare/workers-types": "^5.20260903.1",
     "@types/node": "^24.0.0",
+    "esbuild": "0.28.2",
+    "miniflare": "5.20260831.0-alpha",
     "tsx": "^4.20.5",
     "typescript": "^5.9.2",
     "vitest": "^3.2.4",

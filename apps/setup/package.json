@@ -1,12 +1,12 @@
 {
   "name": "@line-secretary/setup",
-  "version": "0.1.0",
+  "version": "0.3.0",
   "private": true,
   "type": "module",
   "scripts": {
     "typecheck": "tsc --noEmit -p tsconfig.json"
   },
   "dependencies": {
-    "@line-secretary/protocol": "0.1.0"
+    "@line-secretary/protocol": "0.3.0"
   }
 }
