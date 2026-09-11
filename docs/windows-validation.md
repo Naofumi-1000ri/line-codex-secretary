@@ -23,10 +23,22 @@ Windowsネイティブ / Node 22.18.0 / Codex CLI 0.153.4のローカル修正�
 - Windowsの実DPAPIでランダムなテスト鍵の保存・復号・暗号化ファイル内の平文不在・上書き・別Agent ID・欠損/破損時の固定エラーを検査。テスト専用一時ディレクトリは削除。
 - npm / exeの起動解決、空白を含むパス、Windows環境変数の大文字小文字、秘密環境変数の除外を検査。
 - Codex App Serverのinitialize / initializedと停止を認証なし・モデル呼び出しなしで実行。
-- Secret BrokerのNode起動・標準入力・非TTY / clipboard拒否をモックで検査。クラウドへ鍵は送信しません。
+- Secret BrokerのNode起動・標準入力・非TTY / clipboard拒否、Mac Keychainの呼び出し維持、非表示入力のBackspace / Ctrl+Cとraw mode解除をモックで検査。クラウドへ鍵は送信しません。
 - workspaceの脱出拒否テストはWindowsで管理者権限不要のjunctionを使い、同じ境界を検査。
 
-CIの実行結果・リンクは完了後に追記します。
+### 実行結果
+
+実装コミット`51addb2940faaf5c79e291284289e38229661b58`の[GitHub Actions実行](https://github.com/Naofumi-1000ri/line-codex-secretary/actions/runs/34556055239)は両OSで成功しました。
+
+| 環境 | 結果 |
+| --- | --- |
+| Windows Server 2025 x64（windows-latest）、Node 22.18.0、Codex 0.153.4 | 17テスト成功、型チェック成功、Worker dry-run成功 |
+| macOS 26 ARM64（macos-latest）、Node 22.18.0、Codex 0.153.4 | 16テスト成功、Windows専用1件スキップ、型チェック成功、Worker dry-run成功 |
+| ローカルmacOS、Node 26.5.0 | 15テスト成功、Windows専用・CI用Codex起動の2件スキップ、型チェック成功、Worker dry-run成功 |
+
+初回Windows CIでは暗号化ファイルの上書きが失敗しました。PowerShellから`File.Replace`へ渡すバックアップパスを`$null`から`NullString.Value`へ修正し、同じ実DPAPIテストで更新成功を確認しました。Windows 11の本人PCでの実入力・LINE往復の確認と、Windows Server CIの成功は区別します。
+
+[PR #1](https://github.com/Naofumi-1000ri/line-codex-secretary/pull/1)に変更をまとめています。
 
 ## 未検証・残る制限
 
