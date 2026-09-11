@@ -1,6 +1,6 @@
 # LINE × Cloudflare × PC Codex 秘書アプリ設計
 
-> Windowsネイティブの導入・起動は[Windows手順](windows-setup.md)を併用してください。Windowsでは`npm.cmd`、秘密入力は対話TTY、PC鍵はDPAPI CurrentUserを使います。以下のmacOSクリップボード・GUI・Keychain操作はMac専用です。対応範囲は文字・個人トーク・読み取り専用。既存環境の具体的なIDやURLは新規導入へ転用しないでください。
+> Windowsネイティブの導入・起動は[Windows手順](windows-setup.md)を併用してください。Windowsでは`npm.cmd`、秘密入力は対話TTY、PC鍵はDPAPI CurrentUserを使います。以下のmacOSクリップボード・GUI・Keychain操作はMac専用です。公開0.3.0は個人トークの文字・画像・動画に対応。Codexは読み取り専用、Agentは添付保存とコピー整理を行います。[現行の機能](media-support.md)と[更新手順](upgrade-0.3.0.md)を参照し、以下の旧テキスト版の動作説明より優先してください。既存環境の具体的なIDやURLは新規導入へ転用しないでください。
 
 
 更新日: 2026-09-03
@@ -29,7 +29,7 @@ flowchart LR
 - Codexデスクトップ画面は自動操作しない。PC AgentがCodex App Serverを前景の子プロセスとして1つ起動し、LINEトークごとに同じCodexスレッドへターンを追加する。
 - 初回構築は[AIセットアップ・ナビゲーター](./setup-navigator.md)がLINE公式アカウント作成から疎通確認までA〜Zで案内し、各段階を自動検証する。
 - 初心者向け体験は[「中学生にもわかる」プロダクト方針](./product-principles.md)を受入基準にする。ターミナル操作は秘書を開始する1コマンドに絞る。
-- MVPは個人LINEアカウント1名、PC1台、同時実行1件、テキストメッセージだけに絞る。
+- 公開0.3.0は個人LINEアカウント1名、PC1台、同時実行1件、文字・画像・動画に対応する。
 - CodexにOS全体の権限を渡さない。読み取りと隔離worktree内の変更を中心にし、外部送信、削除、mainへの反映などはLINE上で個別承認する。
 - LINEのチャネルアクセストークンとシークレットはWorkerだけが保持する。PCやCodexへ渡さない。
 
@@ -221,7 +221,7 @@ stateDiagram-v2
 2. `LINE_CHANNEL_SECRET` を鍵にHMAC-SHA256を計算し、Base64化して `x-line-signature` と定数時間比較する。
 3. `source.userId` が `ALLOWED_LINE_USER_IDS` に含まれないイベントは、内容を保存せず200で終了する。
 4. `webhookEventId` の一意制約で再送を重複排除する。
-5. MVPでは個人チャットのテキストだけを受け付ける。グループ、画像、音声、ファイルは案内メッセージを返す。
+5. 公開0.3.0では個人チャットの文字・画像・動画を受け付ける。グループは処理せず、音声・一般ファイルは未対応と案内する。
 
 ### コマンド
 
@@ -442,7 +442,7 @@ WorkerとAgentはTypeScript、入力検証はZod、テストはVitest、Worker�
 
 ## 13. MVP後の拡張
 
-1. 画像・ファイルをLINEから受け取り、PCへ一時保存して要約
+1. 一般ファイルや音声の受信（画像・動画の原ファイル保存、代表フレーム解析、コピー整理は0.3.0で実装済み）
 2. R2へ暗号化成果物を置き、短時間・一度限りのダウンロードURLを発行
 3. Cloudflare Queues Pull Consumerで高負荷・複数PCへ対応。ただしD1を正本として残す
 4. Durable Objects/WebSocketで低遅延通知

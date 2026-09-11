@@ -1,6 +1,6 @@
 {
   "name": "@line-secretary/worker",
-  "version": "0.1.0",
+  "version": "0.3.0",
   "private": true,
   "type": "module",
   "scripts": {
@@ -8,7 +8,7 @@
     "build": "wrangler deploy --dry-run --config wrangler.jsonc --outdir dist"
   },
   "dependencies": {
-    "@line-secretary/protocol": "0.1.0",
+    "@line-secretary/protocol": "0.3.0",
     "zod": "^4.1.5"
   }
 }

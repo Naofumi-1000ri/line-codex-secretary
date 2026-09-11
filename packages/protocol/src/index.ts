@@ -1,5 +1,14 @@
 import { z } from "zod";
 
+export const RELEASE_VERSION = "0.3.0";
+export const AGENT_PROTOCOL_VERSION = "0.3.0";
+export const DATABASE_SCHEMA_VERSION = 4;
+
+export function requireCompatibleWorker(health: unknown): void {
+  const parsed = z.object({ ok: z.literal(true), version: z.literal(RELEASE_VERSION), schemaVersion: z.literal(DATABASE_SCHEMA_VERSION) }).safeParse(health);
+  if (!parsed.success) throw new Error("WORKER_UPGRADE_REQUIRED: expected release 0.3.0 and database schema 4");
+}
+
 export const jobStatusSchema = z.enum([
   "QUEUED",
   "LEASED",
@@ -14,14 +23,29 @@ export const jobStatusSchema = z.enum([
 
 export type JobStatus = z.infer<typeof jobStatusSchema>;
 
+export const mediaSchema = z.object({
+  messageId: z.string().regex(/^[a-zA-Z0-9_-]{1,100}$/),
+  kind: z.enum(["image", "video"]),
+  receivedAt: z.string().datetime(),
+  groupId: z.string().max(200).optional(),
+  groupIndex: z.number().int().positive().optional(),
+  groupTotal: z.number().int().positive().optional()
+});
+export type MediaAttachment = z.infer<typeof mediaSchema>;
+
 export const claimedJobSchema = z.object({
   id: z.string().min(1),
-  prompt: z.string().min(1).max(8_000),
+  prompt: z.string().min(1).max(250_000),
   conversationId: z.string().regex(/^[a-f0-9]{64}$/),
   workspaceKey: z.string().regex(/^[a-z0-9_-]{1,40}$/),
   requestedMode: z.literal("read_only"),
   leaseToken: z.string().min(32),
-  leaseExpiresAt: z.string()
+  leaseExpiresAt: z.string(),
+  media: mediaSchema.optional(),
+  attachments: z.array(z.object({ jobId: z.string(), media: mediaSchema })).max(30).optional(),
+  notificationMode: z.enum(["quiet", "detailed"]).optional(),
+  continuation: z.boolean().optional(),
+  previousResults: z.array(z.string()).optional()
 });
 
 export const claimResponseSchema = z.object({
@@ -30,6 +54,9 @@ export const claimResponseSchema = z.object({
 
 export const jobResultSchema = z.object({
   summary: z.string().min(1).max(12_000),
+  folder: z.string().max(100).nullable().optional(),
+  execution: z.enum(["reply", "work", "ask", "analyze", "organize"]).nullable().optional(),
+  notification: z.object({ mode: z.enum(["quiet", "detailed", "inherit"]), scope: z.enum(["turn", "conversation"]) }).nullable().optional(),
   artifacts: z.array(z.string().max(500)).max(20).default([]),
   requested_actions: z.array(z.string().max(500)).max(20).default([]),
   warnings: z.array(z.string().max(500)).max(20).default([])

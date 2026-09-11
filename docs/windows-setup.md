@@ -1,10 +1,12 @@
 # Windowsネイティブ導入手順
 
-更新日: 2026-09-11。WSLを使わず、文字メッセージ・個人トーク・読み取り専用で利用します。新規導入では共通の[セットアップ手順](setup-procedure.md)のLINE / Cloudflare手順と、このOS別手順を併用してください。実際の検証範囲は[検証記録](windows-validation.md)を参照してください。
+更新日: 2026-09-11。WSLを使わず、個人トークの文字・画像・動画に対応します。Codexは読み取り専用で、添付保存とコピー整理はAgentの固定処理が行います。新規導入では共通の[セットアップ手順](setup-procedure.md)のLINE / Cloudflare手順と、このOS別手順を併用してください。実際の検証範囲は[検証記録](windows-validation.md)を参照してください。
 
 ## 1. PCを準備する
 
 Windows 11、Git、Node.js 22.18.0以上、Windows PowerShell 5.1を準備します。Windows 10、ARM64は今回の実環境検証の対象外です。Codexの[Windows sandbox公式説明](https://developers.openai.com/codex/windows/)も参照し、読み取り専用sandboxを利用できる状態にしてください。管理者承認が必要な設定は本人または組織管理者が行います。
+
+`ffmpeg`と`ffprobe`をWindows向け配布元から導入し、両exeのあるbinフォルダをPATHへ追加してください。`ffmpeg -version`、`ffprobe -version`で確認します。未導入時も原ファイルは保存しますが、プレビュー解析はできません。
 
 通常のPowerShellターミナルで次を実行します。既存のCodexがある場合は先に版とログインを確認し、勝手に置き換えないでください。
 
@@ -38,7 +40,7 @@ $env:LINE_SECRETARY_CODEX_EXE = 'C:\Tools\Codex\codex.exe'
 
 共通手順の第1〜3章に従い、LINE公式アカウントとMessaging APIを準備し、Wranglerへログインします。LINEの規約同意・ログイン・秘密入力は本人が行います。
 
-配布元の`apps/worker/wrangler.jsonc`には既存の開発用リソースIDがあります。そのままデプロイせず、自分用コピーを作成してください。以下は新規導入専用です。同名のローカル設定がある場合はコピーせず内容を確認します。
+配布元の`apps/worker/wrangler.jsonc`は導入用のプレースホルダーです。そのままデプロイせず、自分用コピーを作成してください。以下は新規導入専用です。同名のローカル設定がある場合はコピーせず内容を確認します。
 
 ```powershell
 Copy-Item apps/worker/wrangler.jsonc apps/worker/wrangler.local.jsonc
@@ -47,7 +49,7 @@ node node_modules/wrangler/bin/wrangler.js whoami
 node node_modules/wrangler/bin/wrangler.js d1 create YOUR_UNIQUE_DATABASE_NAME
 ```
 
-`wrangler.local.jsonc`の`account_id`、`name`、`database_name`、`database_id`を自分用の値へ変更します。`vars.AGENT_ID`は`linebot-windows`、`APP_VERSION`はこの版の`0.1.0`、`DEFAULT_WORKSPACE_KEY`は`linebot`とし、後のAgent設定と一致させます。ファイルはWorkerディレクトリ内に置き、既存の`main`と`migrations_dir`の相対パスを維持します。
+`wrangler.local.jsonc`の`account_id`、`name`、`database_name`、`database_id`を自分用の値へ変更します。`vars.AGENT_ID`は`linebot-windows`、`APP_VERSION`はこの版の`0.3.0`、`DEFAULT_WORKSPACE_KEY`は`linebot`とし、後のAgent設定と一致させます。ファイルはWorkerディレクトリ内に置き、既存の`main`と`migrations_dir`の相対パスを維持します。
 
 新規作成したリソースであることを確認してから実行します。
 
@@ -60,7 +62,7 @@ node node_modules/wrangler/bin/wrangler.js deploy --config apps/worker/wrangler.
 
 ### 既存Workerに接続する場合
 
-Workerの版、対象Account ID、Agent ID、設定ファイルを先に確認します。公開Agent 0.1.0と別系統のWorker 0.3.0は同一仕様ではありません。HTTP 426が出る場合は対応するAgentを用意してください。今回の変更は0.3.0互換を追加しません。
+Workerの版、対象Account ID、Agent ID、設定ファイルを先に確認します。公開版はWorker / Agentとも0.3.0、DBスキーマ4です。0.1.0からは[更新手順](upgrade-0.3.0.md)に沿って機能とDBを更新します。番号だけを書き換えてHTTP 426を回避しないでください。既に0.3.0 / schema4のWorkerなら既存の鍵やDBを作り直す必要はありません。
 
 既存Workerで`agent-token`を実行すると、Workerの単一`AGENT_TOKEN_SHA256`が置き換わり、以前の鍵を使うPCは接続できなくなります。複数PC用の追加登録ではありません。既存端末を保護する場合は、独立したWorkerを用意するか、明示的な移行計画を立ててください。既存のLINE鍵の再登録も通常は不要です。
 
@@ -109,3 +111,9 @@ npm.cmd run secretary
 `codex:smoke`はログイン済みCodexでモデルを呼ぶ読み取り試験です。CIの認証不要な起動試験とは異なります。LINEから短い読み取り依頼を送り、返信後「さっきの説明を一言で」を送り、継続を確認してください。
 
 起動は`start-secretary.cmd`のダブルクリックでも可能です。起動済みなら重ねて実行しません。停止はCtrl+C、バッチ終了確認が出たらY。再開は同じコマンドで行います。PCの電源・ネット接続・Agentの実行が必要です。自動起動やサービス登録は行いません。
+
+## 5. 画像・動画と整理の確認
+
+「これから送る写真をイベント写真フォルダに整理して」と送り、画像を添付します。`line-media/<会話ハッシュ>/collections/イベント写真/`にコピーされ、日付別の原ファイルが残ることを確認します。解析なら「この写真を比較して」、動画なら「この動画を要約して」と添付してください。用途未指定の添付は、件数をまとめて用途確認の返信になります。詳しくは[メディア手順](media-support.md)を参照してください。
+
+スタッフによる以前のWindows確認は文字2往復です。今回のCIによるメディア処理と、Windows PC上のLINE実機検証は別です。

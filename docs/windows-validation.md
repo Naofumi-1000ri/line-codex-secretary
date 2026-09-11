@@ -2,6 +2,8 @@
 
 更新日: 2026-09-11
 
+> この文書はPR #1（0.1.0のWindows移植）の履歴です。現在の公開対象は画像・動画・整理を含む0.3.0です。[統合・検証記録](release-0.3.0.md)を参照してください。
+
 ## 根拠と実装範囲
 
 公開mainを取得し、`b2a8af3d28cd72118637ef2ad0e30be89df4d852`のままでWindows対応が未反映であることを確認しました。提供されたWindows検証メモと配布ガイドを参照しました。原Windowsソースやパッチは提供資料から入手できなかったため、今回はメモを根拠とした再実装です。
@@ -12,7 +14,7 @@ MacのKeychainコマンド・Swift補助処理・Codex起動経路を維持し�
 
 ## 以前のWindows実機確認（提供資料）
 
-Windowsネイティブ / Node 22.18.0 / Codex CLI 0.153.4のローカル修正版で、LINE依頼と続く「さっきの説明を一言で」の2往復、同一thread ID、Ctrl+C停止を利用者が確認済みです。Windowsビルド番号は不明です。これは**今回作成したコードの実機確認ではありません**。
+Windowsネイティブ / Node 22.18.0 / Codex CLI 0.153.4のローカル修正版で、LINE依頼と続く「さっきの説明を一言で」の2往復、同一thread ID、Ctrl+C停止をスタッフが確認済みです。Windowsビルド番号は不明です。これは**今回作成したコードの実機確認ではありません**。
 
 この過去確認には、Worker 0.3.0とAgent 0.1.0のHTTP 426を解消する別のプロトコル対応が含まれます。今回のPRは公開0.1.0同士を対象としたOS移植であり、0.3.0互換・バージョン偽装・既存Workerの変更を含みません。
 
@@ -36,7 +38,7 @@ Windowsネイティブ / Node 22.18.0 / Codex CLI 0.153.4のローカル修正�
 | macOS 26 ARM64（macos-latest）、Node 22.18.0、Codex 0.153.4 | 16テスト成功、Windows専用1件スキップ、型チェック成功、Worker dry-run成功 |
 | ローカルmacOS、Node 26.5.0 | 15テスト成功、Windows専用・CI用Codex起動の2件スキップ、型チェック成功、Worker dry-run成功 |
 
-初回Windows CIでは暗号化ファイルの上書きが失敗しました。PowerShellから`File.Replace`へ渡すバックアップパスを`$null`から`NullString.Value`へ修正し、同じ実DPAPIテストで更新成功を確認しました。Windows 11の本人PCでの実入力・LINE往復の確認と、Windows Server CIの成功は区別します。
+初回Windows CIでは暗号化ファイルの上書きが失敗しました。PowerShellから`File.Replace`へ渡すバックアップパスを`$null`から`NullString.Value`へ修正し、同じ実DPAPIテストで更新成功を確認しました。Windows 11のスタッフPCでの実入力・LINE往復の確認と、Windows Server CIの成功は区別します。
 
 [PR #1](https://github.com/Naofumi-1000ri/line-codex-secretary/pull/1)に変更をまとめています。
 

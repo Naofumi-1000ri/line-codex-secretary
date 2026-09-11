@@ -17,6 +17,14 @@ jobs:
           cache: npm
       - run: npm ci --ignore-scripts
       - run: npm install --global @openai/codex@0.153.4
+      - name: Install ffmpeg (Windows)
+        if: runner.os == 'Windows'
+        run: choco install ffmpeg --yes --no-progress
+      - name: Install ffmpeg (macOS)
+        if: runner.os == 'macOS'
+        run: command -v ffmpeg >/dev/null || brew install ffmpeg
+      - run: ffmpeg -version
+      - run: ffprobe -version
       - run: npm run typecheck
       - run: npm test
         env:

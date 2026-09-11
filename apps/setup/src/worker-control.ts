@@ -1,3 +1,4 @@
+import { AGENT_PROTOCOL_VERSION } from "@line-secretary/protocol";
 import { readFile } from "node:fs/promises";
 import path from "node:path";
 import { agentConfigSchema } from "@line-secretary/protocol";
@@ -12,7 +13,7 @@ async function request(pathname: string, method = "GET"): Promise<unknown> {
     method,
     headers: {
       authorization: `Bearer ${token}`,
-      "x-agent-version": "0.1.0"
+      "x-agent-version": AGENT_PROTOCOL_VERSION
     }
   });
   if (!result.ok) throw new Error(`WORKER_HTTP_${result.status}`);

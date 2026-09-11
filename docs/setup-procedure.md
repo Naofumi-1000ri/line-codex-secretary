@@ -1,6 +1,6 @@
 # PC Codex秘書 セットアップ実施手順
 
-> Windowsネイティブの導入・起動は[Windows手順](windows-setup.md)を併用してください。Windowsでは`npm.cmd`、秘密入力は対話TTY、PC鍵はDPAPI CurrentUserを使います。以下のmacOSクリップボード・GUI・Keychain操作はMac専用です。対応範囲は文字・個人トーク・読み取り専用。既存環境の具体的なIDやURLは新規導入へ転用しないでください。
+> Windowsネイティブの導入・起動は[Windows手順](windows-setup.md)を併用してください。Windowsでは`npm.cmd`、秘密入力は対話TTY、PC鍵はDPAPI CurrentUserを使います。以下のmacOSクリップボード・GUI・Keychain操作はMac専用です。公開0.3.0は個人トークの文字・画像・動画に対応。Codexは読み取り専用、Agentは添付保存とコピー整理を行います。[現行の機能](media-support.md)と[更新手順](upgrade-0.3.0.md)を参照し、以下の旧テキスト版の動作説明より優先してください。既存環境の具体的なIDやURLは新規導入へ転用しないでください。
 
 
 更新日: 2026-09-03
@@ -28,9 +28,9 @@ LINE
 | 団体名 | PC Codex秘書 |
 | 業種 | 個人 → 個人（架空）。確認画面で必要なら利用者が変更 |
 | 利用者 | 1人 |
-| 対象 | 個人チャットのテキスト |
+| 対象 | 個人チャットの文字・画像・動画 |
 | ワークスペース | このプロジェクトフォルダ1つ |
-| 操作モード | 読み取り専用 |
+| 操作モード | Codex読み取り専用。Agentは添付保存・コピー整理 |
 | AIモデル | `gpt-5.6-luna` |
 | 推論強度 | `max` |
 | 同時処理 | 1件 |
@@ -167,7 +167,7 @@ Worker名とD1名の既定案はどちらも `line-codex-secretary-{testRunId}` 
 ### 完了条件
 
 - `/healthz` が `ok: true` を返す。
-- D1のschema versionを取得できる。
+- D1 schemaVersion 4とWorker version 0.3.0を確認できる。
 - Worker URL、D1 ID、Cloudflare Account IDが進捗ファイルに記録される。
 
 ## 3. LINEの鍵を安全に登録する
@@ -235,7 +235,7 @@ npm run secretary
 🟢 ONLINE     LINEからの依頼を待っています
 🔗 Codex接続  会話を引き継ぐセッションサーバーに接続済み
 🤖 AIモデル   gpt-5.6-luna / max
-🔒 操作モード 読み取り専用
+🔒 操作モード Codex読み取り専用・Agentによる添付保存とコピー整理
 ```
 
 ## 6. LINEから一往復を確認する
@@ -304,3 +304,5 @@ AIは「できました」だけで終えず、次をまとめて報告する。
 - 「確認を押す」「次を押す」のようなクリック単位の往復を続けない。
 - 技術用語より「LINEの箱」「ネットの受付」「PCの秘書」を先に使う。
 - 利用者の自己申告だけで完了にせず、画面、API、CLI、D1のいずれかで確認する。
+
+画像・動画・整理の導入完了は、[メディア手順](media-support.md)に沿って実画像・短い動画・指定フォルダへのコピーを別途確認し、文字2往復だけで全機能確認済みとしない。
