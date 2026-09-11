@@ -14,7 +14,15 @@
 
 ## 検証
 
-ローカルとGitHub ActionsのMac / Windowsで型チェック、単体テスト、実ffmpegのJPEG・PNG・MP4プレビューとコピー、実workerd / D1統合、Worker dry-runを検査します。CIはNode 22.18.0、Codex CLI 0.153.4。Windowsでは実DPAPI、両OSで認証不要のCodex App Server初期化・停止も含みます。最終結果はPRに記録します。
+ローカルとGitHub ActionsのMac / Windowsで型チェック、単体テスト、実ffmpegのJPEG・PNG・MP4プレビューとコピー、実workerd / D1統合、Worker dry-runを検査します。CIはNode 22.18.0、Codex CLI 0.153.4。Windowsでは実DPAPI、両OSで認証不要のCodex App Server初期化・停止も含みます。実装コミット`673e136`の[CI実行](https://github.com/Naofumi-1000ri/line-codex-secretary/actions/runs/34575306393)は成功しました。
+
+| 環境 | 結果 |
+| --- | --- |
+| Windows Server 2025 x64 / Node 22.18.0 / Codex 0.153.4 / ffmpeg 9.0.1 | 49件成功、型チェック・Worker dry-run成功 |
+| macOS 26 ARM64 / 同Node・Codex・ffmpeg | 48件成功、Windows専用1件スキップ、型チェック・Worker dry-run成功 |
+| ローカルmacOS / Node 26.5.0 | 47件成功、Windows DPAPI・CI用Codex起動の2件スキップ、型チェック・Worker dry-run成功 |
+
+[PR #2](https://github.com/Naofumi-1000ri/line-codex-secretary/pull/2)で統合しています。
 
 Worker統合ではschema1の既存ジョブを残してschema4へ更新し、旧Agentの拒否、順不同画像6枚の一括取得、LINE送信モックへの開始通知・最終返信を確認します。単体のWorkerテストでは通知設定、処理中の追加、キャンセル、再送重複排除も検査します。
 
