@@ -1,67 +1,46 @@
-# LINE秘書 運用メモ
+# LINE秘書 運用手順（0.3.0）
 
-> Windowsネイティブの導入・起動は[Windows手順](windows-setup.md)を併用してください。Windowsでは`npm.cmd`、秘密入力は対話TTY、PC鍵はDPAPI CurrentUserを使います。以下のmacOSクリップボード・GUI・Keychain操作はMac専用です。公開0.3.0は個人トークの文字・画像・動画に対応。Codexは読み取り専用、Agentは添付保存とコピー整理を行います。[現行の機能](media-support.md)と[更新手順](upgrade-0.3.0.md)を参照し、以下の旧テキスト版の動作説明より優先してください。既存環境の具体的なIDやURLは新規導入へ転用しないでください。
+Mac / Windows、個人トークの文字・画像・動画に対応します。Codexは読み取り専用、Agentの固定処理が添付保存とコピー整理を行います。Windowsでは以下の`npm`を`npm.cmd`に置き換えます。
 
+## 設定と状態確認
 
-## 現在の開発環境
+接続先は自分の`.agent/config.json`とwrangler設定ファイルで確認します。配布テンプレートの名前・D1 IDを既存環境へ転用しません。Worker / Agentは0.3.0、D1はschema4です。[更新手順](upgrade-0.3.0.md)も参照してください。
 
-- LINE公式アカウント: `PC Codex秘書`（`@805xcchy`）
-- Worker: `https://line-codex-secretary-dev.naofumi-00c.workers.dev`
-- Webhook: `https://line-codex-secretary-dev.naofumi-00c.workers.dev/v1/line/webhook`
-- 許可workspace: `/Users/hgs/Documents/ChatGPT/LineBotV2`
-- Agent ID: `linebot-mac`
-- AIモデル: `gpt-5.6-luna`
-- 推論強度: `max`
-- 実行モード: 読み取り専用
-
-## 状態確認
-
-```bash
-npm run setup
-npx wrangler deployments list --config apps/worker/wrangler.jsonc
-curl -fsS https://line-codex-secretary-dev.naofumi-00c.workers.dev/healthz
+```sh
 npm run worker:control -- status
+npm run worker:control -- agent-health
 ```
 
-## PC Codex秘書の起動と停止
+`status`は所有者数・キュー件数・最後に登録されたAgent情報を取得します。`agent-health`は認証付き接続確認とAgent情報の登録を行うため、実行しただけで「常駐中のAgentが確認できた」とは扱いません。`/healthz`は鍵なしでWorkerの版とschemaを確認できます。
 
-秘書を使う間は、このプロジェクトを開いているCodex Appタスクの統合ターミナルをサイドパネルに開く。そこで次のコマンドを実行し、ターミナルを開いたままにする。このターミナルを秘書の起動・状態確認・停止を行う操作盤として使う。
+## 起動と停止
 
-```bash
+```sh
 npm run secretary
 ```
 
-起動に成功すると「Codex接続」「LINEからの依頼を待っています」「AIモデル gpt-5.6-luna / max」が表示される。同じLINEトークから届いた依頼は同じCodexスレッドへ追加され、PC再起動後も前回のスレッドへ再接続する。停止するときは同じターミナルで `Ctrl+C` を押す。PCを再起動した後は、このコマンドをもう一度実行する。
+ターミナルを開いたままにし、停止はCtrl+C。Windowsでは`start-secretary.cmd`も使えます。再起動後は再実行します。同時に複数Agentを起動しません。OSサービスや自動起動は登録しません。
 
-事故防止のため、LINE秘書は新規スレッド、既存スレッドの再開、各ターンのすべてで `gpt-5.6-luna` を明示し、各ターンの推論強度を `max` に固定する。利用者のCodex全体設定や別タスクのモデルは変更しない。
+既存の会話IDは`.agent/agent.sqlite`に保持します。同じLINEトークは同じCodexスレッドへ追加し、再起動後は再接続します。モデルは`gpt-5.6-luna`、推論強度は`max`です。CLI更新後は`npm run codex:smoke`で読み取り試験を行います。
 
-Codex App Serverは現在Experimentalである。Codex CLIを更新した後は `npm run codex:smoke` を実行し、セッション接続と結果形式を確認する。
+## LINE通知とメディア
 
-ターミナルには、LINEからPCへ届いたことが分かるように、時刻、受付番号、依頼文の短いプレビュー、Codexの接続状態、返信文の短いプレビュー、処理時間を表示する。受信行は、幅の狭いサイドパネルでも本文が先に見える `📩「依頼文…」のメッセージを受信` の順にする。これは手元のデモ用ターミナルだけに表示し、Cloudflareの監査ログやD1のイベントログには本文を複製しない。秘密情報、ユーザーID、Authorizationヘッダーは表示しない。接続状態は `npm run worker:control -- status` の `latestAgent` でも確認できる。
+通常の文章は最終返信のみです。添付だけなら保存して用途を確認します。画像・動画の解析／整理は同じ作業で開始通知1回と最終返信を送り、処理中の追加分があれば前の結果を保留してまとめます。「これから詳細ログを出して」「今回は詳細ログも出して」「ログはもういい」で通知量を切り替えます。
 
-LINEには次の3段階だけを通知する。
+PC側には受付番号・短い本文・保存先・処理状況を表示します。LINEへ内部推論、生のコマンド出力や鍵を送信しません。配信を確認できない場合は「結果保存・LINE配信未確認」と表示し、配信成功と区別します。自動再送や厳密な一度限りの配信保証を意味しません。
 
-1. `📨 PC Codexへ送信しました`
-2. `🖥️ PC Codexが受信しました` / `🧠 Codexが確認中です…`
-3. `✅ Codexから返信が届きました`
+受信データは`line-media/`へ保存し、整理先はその会話内の`collections/<指定名>/`です。原ファイルを消さずコピーし、既存の異なる内容は上書きしません。`ffmpeg` / `ffprobe`が必要です。[メディアの詳細](media-support.md)を参照してください。
 
-受付番号はLINEとターミナルの両方へ表示し、画面を並べたデモで同じ依頼を追えるようにする。Codexの内部推論、生のコマンド出力、秘密情報はLINEへ送らない。
+## 診断・鍵
 
-## 秘密情報の更新
-
-`npm run worker:secrets` を再実行する。LINE側で古い鍵を失効してから動作確認する。秘密情報をコマンド引数、環境変数、チャット、LINEへ貼らない。
-
-## 診断
-
-```bash
+```sh
 npm run typecheck
 npm test
 npm run codex:smoke
-npx wrangler d1 migrations list DB --remote --config apps/worker/wrangler.jsonc
 ```
 
-LINEから受付番号は返るが完了しない場合は、`npm run secretary` のターミナル表示、`npm run worker:control -- status` の順に確認する。通常の画面表示にある短い本文プレビューを除き、診断コマンドの出力へジョブ本文や秘密値を含めない。
+媒体のローカルモデル試験は`npm run media:smoke`、会話判断は`npm run conversation:smoke`です。これらはモデルを呼びます。CIはテスト用媒体とLINEモックで検査し、実ユーザーの鍵やLINEへ接続しません。
 
-## 最初から再確認する場合
+401は既存鍵・Agent ID・接続先の組み合わせ、426はWorker / Agentの機能版を確認します。鍵更新は通常のコード更新に不要です。`worker:secrets -- agent-token`はWorkerの単一鍵を置き換え、旧端末を失効させます。変更が必要な場合だけ対象と移行影響を確認して行い、値はチャット・引数・環境変数に貼りません。
 
-1周目の `.setup/progress.json` を別名で保存してから、新しい進捗ファイルを作る。外部リソースは削除せず、LINE公式アカウント、Provider、D1、WorkerをIDで検出して再利用する。完全な新規作成テストを行う場合は、既存環境と名前・IDを混同しない別の開発環境を使う。
+Windowsの鍵は同一ユーザーのDPAPI、MacはKeychainです。スタッフのWindows移行で旧Mac鍵が失効した例と同様に、別PCの鍵を無断で再登録して接続を奪い返さないでください。
