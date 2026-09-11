@@ -17,7 +17,9 @@ try {
         $tempPath = [IO.Path]::Combine($directory, [IO.Path]::GetRandomFileName())
         [IO.File]::WriteAllBytes($tempPath, $encrypted)
         if ([IO.File]::Exists($request.path)) {
-            [IO.File]::Replace($tempPath, $request.path, $null)
+            # PowerShell coerces $null to an empty string for string arguments.
+            # NullString passes a real null backup path to the .NET overload.
+            [IO.File]::Replace($tempPath, $request.path, [System.Management.Automation.Language.NullString]::Value)
         } else {
             [IO.File]::Move($tempPath, $request.path)
         }

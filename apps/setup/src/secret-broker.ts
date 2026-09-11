@@ -3,46 +3,12 @@ import { spawn } from "node:child_process";
 import path from "node:path";
 import { saveAgentToken } from "../../agent/src/keychain.js";
 
+import { hiddenPrompt } from "./hidden-prompt.js";
+
 const projectRoot = path.resolve(".");
 const wranglerPath = path.join(projectRoot, "node_modules", "wrangler", "bin", "wrangler.js");
 const wranglerConfig = path.resolve(process.env.LINE_SECRETARY_WRANGLER_CONFIG ?? "apps/worker/wrangler.jsonc");
 const agentId = process.env.LINE_SECRETARY_AGENT_ID ?? "linebot-mac";
-
-function hiddenPrompt(label: string): Promise<string> {
-  if (!process.stdin.isTTY || !process.stdout.isTTY) throw new Error("TTY_REQUIRED");
-  return new Promise((resolve, reject) => {
-    process.stdout.write(label);
-    process.stdin.setRawMode(true);
-    process.stdin.resume();
-    process.stdin.setEncoding("utf8");
-    let value = "";
-    const finish = (): void => {
-      process.stdin.setRawMode(false);
-      process.stdin.pause();
-      process.stdin.off("data", onData);
-      process.stdout.write("\n");
-      resolve(value);
-    };
-    const onData = (chunk: string): void => {
-      for (const character of chunk) {
-        if (character === "\u0003") {
-          process.stdin.setRawMode(false);
-          process.stdin.pause();
-          process.stdin.off("data", onData);
-          reject(new Error("CANCELLED"));
-          return;
-        }
-        if (character === "\r" || character === "\n") {
-          finish();
-          return;
-        }
-        if (character === "\u007f" || character === "\b") value = value.slice(0, -1);
-        else value += character;
-      }
-    };
-    process.stdin.on("data", onData);
-  });
-}
 
 function nativeHiddenPrompt(message: string): Promise<string> {
   if (process.platform !== "darwin") throw new Error("TTY_REQUIRED: run worker:secrets in an interactive terminal");

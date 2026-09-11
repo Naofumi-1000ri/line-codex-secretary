@@ -18,12 +18,12 @@ describe.skipIf(process.platform !== "win32")("real Windows DPAPI CurrentUser", 
     const first = randomBytes(32).toString("base64url");
     const second = randomBytes(32).toString("base64url");
     try {
-      await saveAgentToken("first", first, directory);
-      await saveAgentToken("second", second, directory);
-      expect(await readAgentToken("first", directory)).toBe(first);
+      await expect(saveAgentToken("first", first, directory), "initial save").resolves.toBe("");
+      await expect(saveAgentToken("second", second, directory), "separate agent save").resolves.toBe("");
+      await expect(readAgentToken("first", directory), "initial read").resolves.toBe(first);
       const encrypted = await readFile(windowsTokenPath("first", directory));
       expect(encrypted.includes(Buffer.from(first))).toBe(false);
-      await saveAgentToken("first", second, directory);
+      await expect(saveAgentToken("first", second, directory), "atomic overwrite").resolves.toBe("");
       expect(await readAgentToken("first", directory)).toBe(second);
       expect(await readAgentToken("second", directory)).toBe(second);
       await expect(readAgentToken("missing", directory)).rejects.toThrow("TOKEN_STORE_FAILED");
