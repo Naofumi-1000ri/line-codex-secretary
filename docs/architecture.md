@@ -1,5 +1,8 @@
 # LINE × Cloudflare × PC Codex 秘書アプリ設計
 
+> Windowsネイティブの導入・起動は[Windows手順](windows-setup.md)を併用してください。Windowsでは`npm.cmd`、秘密入力は対話TTY、PC鍵はDPAPI CurrentUserを使います。以下のmacOSクリップボード・GUI・Keychain操作はMac専用です。対応範囲は文字・個人トーク・読み取り専用。既存環境の具体的なIDやURLは新規導入へ転用しないでください。
+
+
 更新日: 2026-09-03
 
 ## 1. 結論

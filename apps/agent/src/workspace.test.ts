@@ -19,8 +19,10 @@ describe("workspace allowlist", () => {
     const outside = path.join(parent, "outside.txt");
     await mkdir(root);
     await writeFile(outside, "secret");
-    await symlink(outside, path.join(root, "escape"));
+    await mkdir(path.join(parent, "external"));
+    await writeFile(path.join(parent, "external", "secret.txt"), "secret");
+    await symlink(path.join(parent, "external"), path.join(root, "escape"), process.platform === "win32" ? "junction" : "dir");
     await expect(resolveInsideWorkspace(root, "../outside.txt")).rejects.toThrow("PATH_OUTSIDE_WORKSPACE");
-    await expect(resolveInsideWorkspace(root, "escape")).rejects.toThrow("SYMLINK_OUTSIDE_WORKSPACE");
+    await expect(resolveInsideWorkspace(root, "escape/secret.txt")).rejects.toThrow("SYMLINK_OUTSIDE_WORKSPACE");
   });
 });
