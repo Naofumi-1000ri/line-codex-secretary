@@ -5,6 +5,8 @@ import readline from "node:readline";
 import { fileURLToPath } from "node:url";
 import { jobResultSchema, type JobResult } from "@line-secretary/protocol";
 
+import { codexExecutable, safeEnvironment } from "./codex-launch.js";
+
 type RpcResponse = {
   id?: number;
   result?: unknown;
@@ -33,13 +35,6 @@ type ActiveTurn = {
 
 export type CodexTurn = { result: JobResult; threadId: string };
 export type OpenedThread = { threadId: string; resumed: boolean };
-
-function safeEnvironment(): NodeJS.ProcessEnv {
-  const allowed = ["PATH", "HOME", "USER", "LOGNAME", "TMPDIR", "CODEX_HOME", "LANG", "LC_ALL"];
-  return Object.fromEntries(
-    allowed.flatMap((name) => (process.env[name] ? [[name, process.env[name]]] : []))
-  ) as NodeJS.ProcessEnv;
-}
 
 function asRecord(value: unknown): Record<string, unknown> | undefined {
   return typeof value === "object" && value !== null ? value as Record<string, unknown> : undefined;
@@ -73,10 +68,11 @@ export class CodexSession {
     private readonly model: string,
     private readonly reasoningEffort: string
   ) {
-    this.child = spawn("codex", ["app-server", "--stdio"], {
+    this.child = spawn(codexExecutable(), ["app-server", "--stdio"], {
       cwd: workspace,
       env: safeEnvironment(),
       shell: false,
+      windowsHide: true,
       stdio: ["pipe", "pipe", "pipe"]
     });
     this.lines = readline.createInterface({ input: this.child.stdout });

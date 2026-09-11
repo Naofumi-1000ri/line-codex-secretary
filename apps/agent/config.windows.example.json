@@ -1,0 +1,9 @@
+{
+  "workerUrl": "https://line-codex-secretary-dev.example.workers.dev",
+  "agentId": "linebot-windows",
+  "workspaceKey": "linebot",
+  "workspacePath": "C:/Users/YOUR_NAME/Documents/line-codex-secretary",
+  "pollIntervalMs": 5000,
+  "heartbeatIntervalMs": 30000,
+  "timeoutMs": 1800000
+}
